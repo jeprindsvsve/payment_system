@@ -21,12 +21,21 @@ class PaymentMethod(ABC):
     def bayar(self, jumlah: float) -> str:
         """Proses pembayaran, lalu kembalikan ID transaksi."""
 
+    @abstractmethod
+    def biaya_admin(self, jumlah: float) -> float:
+        """Hitung biaya admin untuk jumlah pembayaran."""
+
     def proses(self, jumlah: float) -> str:
-        """Template method: urutan langkah dijaga oleh kelas induk."""
+        """Template method: urutan langkah dijaga oleh kelas induk.
+
+        Validasi dan pembayaran memakai total = jumlah + biaya admin.
+        """
         if jumlah <= 0:
             raise PembayaranGagal("Jumlah pembayaran harus lebih dari 0")
-        if not self.validasi(jumlah):
+        total = jumlah + self.biaya_admin(jumlah)
+        if not self.validasi(total):
             raise PembayaranGagal(
-                f"{self.nama} menolak pembayaran {rupiah(jumlah)}"
+                f"{self.nama} menolak pembayaran {rupiah(total)} "
+                f"(termasuk biaya admin {rupiah(total - jumlah)})"
             )
-        return self.bayar(jumlah)
+        return self.bayar(total)
